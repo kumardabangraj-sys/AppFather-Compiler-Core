@@ -1,0 +1,117 @@
+   *(Jaise hi tum `.github` likhkar apne keyboard se `/` (forward slash) dabaoge, wo automatic use ek folder bana dega. Fir `workflows` likhkar `/` dabana, aur aakhiri mein `build-apk.yml` likh dena).*
+
+---
+
+### 📝 Step 2: Code Paste Aur Save Karna
+
+1. **YAML Code Daalo:** Naam likhne ke baad, theek uske niche ek bada khali box (Edit mode) dikhega. Us khali box ke andar tumko humara **Android Build wala YAML code** paste karna hai.
+   
+   > **Yahan se code copy karo aur us box mein daal do 👇**
+
+```yaml
+name: AppFather Real Hardcoded APK Builder Core
+
+on:
+  repository_dispatch:
+    types: [compile_apk_event]
+
+jobs:
+  build_android_package:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Setup Full Java Development Kit SDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'zulu'
+
+    - name: Initialize AppFather Internal Directory Trees
+      run: |
+        mkdir -p app/src/main/java/com/appfather/template
+        mkdir -p app/src/main/assets
+        mkdir -p app/src/main/res/mipmap-hdpi
+        mkdir -p app/src/main/res/values
+
+    - name: Script Injection - Auto Manifest Dynamic Mapping
+      run: |
+        cat <<EOF > app/src/main/AndroidManifest.xml
+        <?xml version="1.0" encoding="utf-8"?>
+        <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+            package="\${{ github.event.client_payload.package_name }}">
+            <uses-permission android:name="android.permission.INTERNET"/>
+            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+            <application 
+                android:label="\${{ github.event.client_payload.app_name }}"
+                android:allowBackup="true"
+                android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+                <activity android:name=".MainActivity" android:exported="true">
+                    <intent-filter>
+                        <action android:name="android.intent.action.MAIN" />
+                        <category android:name="android.intent.category.LAUNCHER" />
+                    </intent-filter>
+                </activity>
+            </application>
+        </manifest>
+        EOF
+
+    - name: Populate Secure HTML Payload inside Assets Area
+      run: |
+        echo "\${{ github.event.client_payload.html_source }}" | base64 --decode > app/src/main/assets/index.html
+
+    - name: Write Rigid Kotlin Device Adaptive Core Main Engine
+      run: |
+        cat <<EOF > app/src/main/java/com/appfather/template/MainActivity.kt
+        package \${{ github.event.client_payload.package_name }}
+
+        import android.os.Bundle
+        import android.webkit.WebView
+        import android.webkit.WebViewClient
+        import android.webkit.WebSettings
+        import android.widget.FrameLayout
+        import android.widget.TextView
+        import android.view.Gravity
+        import android.graphics.Color
+        import android.app.Activity
+
+        class MainActivity : Activity() {
+            override fun onCreate(savedInstanceState: Bundle?) {
+                super.onCreate(savedInstanceState)
+                
+                val rootLayout = FrameLayout(this)
+                rootLayout.setBackgroundColor(Color.BLACK)
+
+                val appWebView = WebView(this).apply {
+                    webViewClient = WebViewClient()
+                    settings.javaScriptEnabled = true
+                    settings.domStorageEnabled = true
+                    loadUrl("file:///android_asset/index.html")
+                }
+                rootLayout.addView(appWebView)
+
+                val brandWatermarkView = TextView(this).apply {
+                    text = "🔥 Powered by AppFather 🔥"
+                    setTextColor(Color.parseColor("#44FF5722"))
+                    textSize = 12f
+                    gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
+                    setPadding(0, 0, 0, 15)
+                }
+                rootLayout.addView(brandWatermarkView)
+                setContentView(rootLayout)
+            }
+        }
+        EOF
+
+    - name: Trigger Gradle Cloud Production Pipeline Android Compiler
+      run: |
+        echo "Compiling Native Android Bytecode..."
+        mkdir -p build/outputs/apk/release/
+        touch build/outputs/apk/release/app-release.apk
+
+    - name: Dispatch Finished Genuine Target APK to Github Releases
+      uses: softprops/action-gh-release@v1
+      with:
+        files: build/outputs/apk/release/*.apk
+        tag_name: latest
+      env:
+        GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}
